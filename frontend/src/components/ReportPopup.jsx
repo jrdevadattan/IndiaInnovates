@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { uploadSingleImage } from "../utils/uploadSingleImage";
-import { useAuth } from "../context/AuthContext";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { createReport } from "../services/reports.service";
+import useAuthStore from "../store/authStore";
 import { Link } from "react-router-dom";
+import { FiAlertTriangle, FiUsers } from "react-icons/fi";
 
 const ReportPopup = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
+  const user = useAuthStore((s) => s.user);
   const [reportType, setReportType] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -107,8 +106,6 @@ const ReportPopup = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const uid = user ? user.uid : "anonymous";
-    const email = user ? user.email : "anonymous@nagrikeye.com";
 
     try {
       let finalLat = coordinates?.lat;
@@ -129,32 +126,27 @@ const ReportPopup = ({ isOpen, onClose }) => {
         }
       }
 
-      let imageUrl = "";
-      if (selectedFile) {
-        imageUrl = await uploadSingleImage(selectedFile, uid);
-      }
+      const formData = new FormData();
+      formData.append("title", selectedCategory || description.slice(0, 60) || "Civic Issue");
+      formData.append("description", description || socialCondition || "No details provided");
+      formData.append("category", selectedCategory || (reportType === "social" ? "Community Safety" : "Other"));
+      formData.append("isAnonymous", !user);
+      formData.append("location", JSON.stringify({
+        type: "Point",
+        coordinates: [finalLng || 73.8, finalLat || 18.5],
+        address: location,
+        city: location.split(",")[1]?.trim() || "",
+        state: location.split(",")[2]?.trim() || ""
+      }));
+      if (selectedFile) formData.append("media", selectedFile);
 
-      await addDoc(collection(db, "reports"), {
-        location,
-        latitude: finalLat || null,
-        longitude: finalLng || null,
-        selectedCategory,
-        description,
-        upvotes: 0,
-        parentId: uid,
-        parentEmail: email,
-        imageFile: imageUrl,
-        createdAt: serverTimestamp(),
-        socialCondition,
-        reportType: reportType || "hazard",
-      });
-
+      await createReport(formData);
       setIsSubmitted(true);
       resetForm();
 
     } catch (err) {
       console.error("Submission Error:", err);
-      alert(`Failed to submit report: ${err.message}`);
+      alert(`Failed to submit report: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -228,7 +220,7 @@ const ReportPopup = ({ isOpen, onClose }) => {
               >
                 <div className="absolute inset-0 bg-linear-to-br from-[#8ED462]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative z-10">
-                  <div className="text-6xl mb-6">⚠️</div>
+                  <div className="mb-6 text-[#8ED462]"><FiAlertTriangle size={64} /></div>
                   <h3 className="text-[28px] font-medium text-[#2c2e2a] mb-4">Hazard Report</h3>
                   <p className="text-[16px] text-gray-600 leading-relaxed">
                     Report potholes, illegal construction, garbage, drainage issues, or other civic hazards
@@ -242,7 +234,7 @@ const ReportPopup = ({ isOpen, onClose }) => {
               >
                 <div className="absolute inset-0 bg-linear-to-br from-[#8ED462]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative z-10">
-                  <div className="text-6xl mb-6">🏘️</div>
+                  <div className="mb-6 text-[#8ED462]"><FiUsers size={64} /></div>
                   <h3 className="text-[28px] font-medium text-[#2c2e2a] mb-4">Social Condition</h3>
                   <p className="text-[16px] text-gray-600 leading-relaxed">
                     Report social issues, community concerns, or neighborhood conditions that need attention

@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import smartCityImg from '../assets/smartcity.png';
 import civicImg from '../assets/civic.png';
@@ -9,6 +10,7 @@ import ReportPopup from '../components/ReportPopup';
 import Posts from './Posts';
 import MapSection from '../components/MapSection';
 import Footer from '../components/Footer';
+import { FiAlertCircle, FiShoppingBag, FiAward, FiClipboard, FiBarChart2, FiBriefcase } from 'react-icons/fi';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -160,6 +162,95 @@ const LandingPage = () => {
             </section>
 
             <Posts />
+
+            {/* ── Platform Features Section ── */}
+            <section className="relative w-full bg-[#F5F5F2] py-24 px-4 lg:px-12 z-10">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-[#1a1a1a] text-[36px] lg:text-[56px] font-semibold leading-tight mb-4">
+                            Everything you need.<br />All in one place.
+                        </h2>
+                        <p className="text-stone-500 text-[18px] max-w-2xl mx-auto">
+                            From emergency SOS to civic rewards — NagrikEye is your complete platform for civic engagement.
+                        </p>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {[
+                            {
+                                Icon: FiAlertCircle,
+                                title: 'SOS & Emergency',
+                                desc: 'Trigger instant emergency alerts with your live location. Get help fast.',
+                                path: '/sos',
+                                cta: 'Open SOS Center',
+                                accent: '#e74c3c',
+                            },
+                            {
+                                Icon: FiShoppingBag,
+                                title: 'Civic Marketplace',
+                                desc: 'Shop eco-friendly civic products. Every purchase supports community initiatives.',
+                                path: '/marketplace',
+                                cta: 'Browse Marketplace',
+                                accent: '#5c8a00',
+                            },
+                            {
+                                Icon: FiAward,
+                                title: 'Rewards & Points',
+                                desc: 'Earn points for every verified report. Climb the leaderboard and redeem rewards.',
+                                path: '/rewards',
+                                cta: 'View Rewards',
+                                accent: '#b45309',
+                            },
+                            {
+                                Icon: FiClipboard,
+                                title: 'Volunteer Board',
+                                desc: 'Pick up civic tasks — from clean-ups to surveys. Make a tangible difference.',
+                                path: '/volunteer/tasks',
+                                cta: 'Join Tasks',
+                                accent: '#1d4ed8',
+                            },
+                            {
+                                Icon: FiBarChart2,
+                                title: 'Impact Dashboard',
+                                desc: 'Live city-wide analytics: issues resolved, active volunteers, SOS response times.',
+                                path: '/impact',
+                                cta: 'See Impact',
+                                accent: '#7c3aed',
+                            },
+                            {
+                                Icon: FiBriefcase,
+                                title: 'NGO Portal',
+                                desc: 'Registered NGOs can manage cases, coordinate volunteers, and publish updates.',
+                                path: '/ngo/dashboard',
+                                cta: 'NGO Dashboard',
+                                accent: '#0d7a5f',
+                            },
+                        ].map((feature) => (
+                            <Link
+                                key={feature.path}
+                                to={feature.path}
+                                className="group flex flex-col bg-white rounded-2xl p-6 border border-stone-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+                            >
+                                <div
+                                    className="w-12 h-12 rounded-xl mb-5 flex items-center justify-center"
+                                    style={{ backgroundColor: `${feature.accent}15`, color: feature.accent }}
+                                >
+                                    <feature.Icon size={22} />
+                                </div>
+                                <h3 className="text-[#1a1a1a] text-[20px] font-semibold mb-2">{feature.title}</h3>
+                                <p className="text-stone-500 text-[14px] leading-relaxed flex-1 mb-5">{feature.desc}</p>
+                                <span
+                                    className="inline-flex items-center gap-2 text-[14px] font-semibold transition-all duration-200 group-hover:gap-3"
+                                    style={{ color: feature.accent }}
+                                >
+                                    {feature.cta} →
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             <MapSection />
             <Footer />
 

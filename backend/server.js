@@ -14,12 +14,14 @@ const server = http.createServer(app);
 initSockets(server);
 
 connectDB().then(() => {
-  server.listen(PORT, () => {
-    console.log(`🚀 LIFELINE server running on port ${PORT}`);
-    startSlaMonitor();
-    startWeeklyDigest();
-  });
+  startSlaMonitor();
+  startWeeklyDigest();
 }).catch(err => {
-  console.error('Failed to connect to MongoDB:', err.message);
-  process.exit(1);
+  console.error('⚠️  MongoDB not connected:', err.message);
+  console.error('   → Set MONGODB_URI in backend/.env to enable database features.');
+});
+
+// Start HTTP server regardless of DB state so health check is reachable
+server.listen(PORT, () => {
+  console.log(`🚀 LIFELINE server running on port ${PORT}`);
 });

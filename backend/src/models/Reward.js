@@ -31,7 +31,7 @@ const rewardSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-rewardSchema.index({ userId: 1 });
+// userId already indexed via unique:true on the field — only add balance index
 rewardSchema.index({ balance: -1 });
 
 module.exports = mongoose.model('Reward', rewardSchema);

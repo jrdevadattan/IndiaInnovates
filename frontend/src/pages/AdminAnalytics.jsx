@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { db, auth } from '../firebase/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { useAuth } from '../context/AuthContext';
+import { getReports } from '../services/reports.service';
+import useAuthStore from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import AnalyticsPanel from '../components/AnalyticsPanel';
@@ -10,7 +9,7 @@ import { useGSAP } from '@gsap/react';
 import { format, subDays, isSameDay, startOfDay } from 'date-fns';
 
 const AdminAnalytics = () => {
-    const { user } = useAuth();
+    const user = useAuthStore((s) => s.user);
     const navigate = useNavigate();
     const container = useRef();
 
@@ -25,30 +24,29 @@ const AdminAnalytics = () => {
             setIsMobile(mobile);
             if (mobile) setIsSidebarCollapsed(true);
         };
-
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
-
-        const q = query(collection(db, 'reports'), orderBy('createdAt', 'desc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const reportsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAtDate: doc.data().createdAt?.toDate()
-            }));
-            setReports(reportsData);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
+        if (!user) { navigate('/login'); return; }
+        const fetchReports = async () => {
+            try {
+                const { data } = await getReports({ limit: 500 });
+                const raw = data.reports || data || [];
+                setReports(raw.map(r => ({
+                    ...r,
+                    id: r._id || r.id,
+                    createdAtDate: r.createdAt ? new Date(r.createdAt) : null,
+                    status: r.status?.toLowerCase() || 'pending'
+                })));
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetchReports();
+        const interval = setInterval(fetchReports, 30000);
+        return () => clearInterval(interval);
     }, [user, navigate]);
 
     useGSAP(() => {
@@ -85,7 +83,7 @@ const AdminAnalytics = () => {
 
     const handleLogout = async () => {
         try {
-            await auth.signOut();
+            await useAuthStore.getState().logout();
             navigate('/login');
         } catch (error) {
             console.error(error);

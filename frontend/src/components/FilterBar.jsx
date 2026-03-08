@@ -58,10 +58,11 @@ const FilterBar = ({ filter, setFilter, sort, setSort }) => {
                                     setMainCategory(cat === "All" ? "" : cat);
                                     setSubCategory("");
                                 }}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${(mainCategory === cat || (cat === "All" && mainCategory === ""))
-                                    ? "bg-[#339966] text-white shadow-md shadow-green-500/20"
-                                    : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-                                    }`}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
+                                    (mainCategory === cat || (cat === "All" && mainCategory === ""))
+                                    ? "bg-[#1a1a1a] text-white shadow-sm"
+                                    : "bg-[#F5F5F2] text-stone-600 hover:bg-stone-200"
+                                }`}
                             >
                                 {cat}
                             </button>
@@ -74,10 +75,11 @@ const FilterBar = ({ filter, setFilter, sort, setSort }) => {
                                 <button
                                     key={subCat}
                                     onClick={() => setSubCategory(subCat === "All" ? "" : subCat)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${(subCategory === subCat || (subCat === "All" && subCategory === ""))
-                                        ? "bg-[#339966] text-white shadow-md shadow-green-500/20"
-                                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-                                        }`}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
+                                        (subCategory === subCat || (subCat === "All" && subCategory === ""))
+                                        ? "bg-[#8ED462] text-[#1a1a1a] shadow-sm"
+                                        : "bg-[#F5F5F2] text-stone-600 hover:bg-stone-200"
+                                    }`}
                                 >
                                     {subCat}
                                 </button>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, auth } from '../firebase/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { useAuth } from '../context/AuthContext';
+import { getReports } from '../services/reports.service';
+import useAuthStore from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import DashboardMap from '../components/DashboardMap';
@@ -9,7 +8,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 const AdminDashboard = () => {
-    const { user } = useAuth();
+    const user = useAuthStore((s) => s.user);
+    const logoutStore = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const container = useRef();
 
@@ -24,29 +24,23 @@ const AdminDashboard = () => {
             setIsMobile(mobile);
             if (mobile) setIsSidebarCollapsed(true);
         };
-
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
-
-        const q = query(collection(db, 'reports'), orderBy('createdAt', 'desc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const reportsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setReports(reportsData);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
+        if (!user) { navigate('/login'); return; }
+        const fetchReports = async () => {
+            try {
+                const { data } = await getReports({ limit: 200 });
+                setReports(data.reports || data || []);
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetchReports();
+        const interval = setInterval(fetchReports, 30000);
+        return () => clearInterval(interval);
     }, [user, navigate]);
 
     useGSAP(() => {
@@ -68,7 +62,7 @@ const AdminDashboard = () => {
 
     const handleLogout = async () => {
         try {
-            await auth.signOut();
+            logoutStore();
             navigate('/login');
         } catch (error) {
             console.error("Failed to log out", error);
@@ -77,8 +71,8 @@ const AdminDashboard = () => {
 
     const stats = {
         total: reports.length,
-        pending: reports.filter(r => !r.status || r.status === 'pending').length,
-        resolved: reports.filter(r => r.status === 'resolved').length
+        pending: reports.filter(r => !r.status || r.status === 'pending' || r.status === 'SUBMITTED').length,
+        resolved: reports.filter(r => r.status === 'resolved' || r.status === 'RESOLVED').length
     };
 
     if (loading) return <div className="h-screen flex items-center justify-center bg-[#F5F5F2]">Loading...</div>;

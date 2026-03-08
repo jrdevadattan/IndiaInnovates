@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const passport = require('passport');
+const { passport, initPassport } = require('./src/config/passport');
 const { apiLimiter } = require('./src/middleware/rateLimit.middleware');
 
 // Route imports
@@ -15,7 +15,8 @@ const rewardRoutes = require('./src/routes/rewards.routes');
 const marketplaceRoutes = require('./src/routes/marketplace.routes');
 const adminRoutes = require('./src/routes/admin.routes');
 
-require('./src/config/passport');
+// Initialize Passport strategy (after dotenv.config)
+initPassport();
 
 const app = express();
 

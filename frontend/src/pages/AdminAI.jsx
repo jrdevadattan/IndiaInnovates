@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db } from '../firebase/firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, setDoc, doc } from 'firebase/firestore';
+import { getReports } from '../services/reports.service';
 import Sidebar from '../components/Sidebar';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -8,12 +7,18 @@ import ReactMarkdown from 'react-markdown';
 import { useLocation } from 'react-router-dom';
 import { useSidebar } from '../hooks/useSidebar';
 
+// ── localStorage helpers for AI sessions ──────────────────────────────────────
+const LS_KEY = 'nagrikeye_ai_sessions';
+const getSessions = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; } };
+const saveSessions = (s) => localStorage.setItem(LS_KEY, JSON.stringify(s));
+const genId = () => `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+// ─────────────────────────────────────────────────────────────────────────────
+
 const AdminAI = () => {
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const [summary, setSummary] = useState("");
     const [analyzing, setAnalyzing] = useState(false);
-
 
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
@@ -35,39 +40,32 @@ const AdminAI = () => {
     const chatEndRef = useRef(null);
     const API_KEY = import.meta.env.VITE_OPEN_ROUTER_API?.trim();
 
-    useEffect(() => {
+    useEffect(() => { setCurrentSessionId(sessionIdFromUrl); }, [sessionIdFromUrl]);
 
-        setCurrentSessionId(sessionIdFromUrl);
-    }, [sessionIdFromUrl]);
-
+    // Load reports from backend
     useEffect(() => {
-        const q = query(collection(db, 'reports'), orderBy('createdAt', 'desc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAtDate: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(doc.data().createdAt)
-            }));
-            setReports(data);
-            setLoading(false);
-        });
-        return () => unsubscribe();
+        const fetchReports = async () => {
+            try {
+                const { data } = await getReports({ limit: 200 });
+                const raw = data.reports || data || [];
+                setReports(raw.map(r => ({
+                    ...r,
+                    id: r._id || r.id,
+                    selectedCategory: r.category || r.selectedCategory,
+                    location: typeof r.location === 'object' ? (r.location?.address || '') : (r.location || ''),
+                    createdAtDate: r.createdAt ? new Date(r.createdAt) : new Date(),
+                })));
+            } catch (e) { console.error(e); }
+            finally { setLoading(false); }
+        };
+        fetchReports();
     }, []);
 
+    // Load chat history from localStorage when session changes
     useEffect(() => {
-        if (!currentSessionId) {
-            setChatHistory([]);
-            return;
-        }
-        const q = query(
-            collection(db, 'ai_sessions', currentSessionId, 'messages'),
-            orderBy('createdAt', 'asc')
-        );
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const messages = snapshot.docs.map(doc => doc.data());
-            setChatHistory(messages);
-        });
-        return () => unsubscribe();
+        if (!currentSessionId) { setChatHistory([]); return; }
+        const sessions = getSessions();
+        setChatHistory(sessions[currentSessionId]?.messages || []);
     }, [currentSessionId]);
 
     useEffect(() => {
@@ -92,18 +90,22 @@ const AdminAI = () => {
         });
     }, []);
 
-    const createNewSession = async () => {
-        try {
-            const docRef = await addDoc(collection(db, 'ai_sessions'), {
-                createdAt: serverTimestamp(),
-                title: "New Chat"
-            });
-            setCurrentSessionId(docRef.id);
-            setChatHistory([]);
+    const createNewSession = () => {
+        const id = genId();
+        const sessions = getSessions();
+        sessions[id] = { id, title: 'New Chat', createdAt: new Date().toISOString(), messages: [] };
+        saveSessions(sessions);
+        setCurrentSessionId(id);
+        setChatHistory([]);
+        return id;
+    };
 
-        } catch (error) {
-            console.error("Error creating session:", error);
-        }
+    const appendMessage = (sessionId, msg) => {
+        const sessions = getSessions();
+        if (!sessions[sessionId]) sessions[sessionId] = { id: sessionId, title: msg.content.slice(0, 30), createdAt: new Date().toISOString(), messages: [] };
+        sessions[sessionId].messages = [...(sessions[sessionId].messages || []), msg];
+        saveSessions(sessions);
+        setChatHistory([...sessions[sessionId].messages]);
     };
 
     const formatReportsForAI = (data) => {
@@ -208,44 +210,31 @@ const AdminAI = () => {
         e.preventDefault();
         if (!input.trim() || !API_KEY) return;
 
-        if (!currentSessionId) {
-            await createNewSession();
+        let targetSessionId = currentSessionId;
+        if (!targetSessionId) {
+            targetSessionId = createNewSession();
         }
 
         const userMsg = input;
         setInput("");
         setChatLoading(true);
 
-        let targetSessionId = currentSessionId;
-        if (!targetSessionId) {
-            const docRef = await addDoc(collection(db, 'ai_sessions'), {
-                createdAt: serverTimestamp(),
-                title: userMsg.substring(0, 30) + "..."
-            });
-            targetSessionId = docRef.id;
-            setCurrentSessionId(targetSessionId);
+        const userMsgObj = { role: 'user', content: userMsg, createdAt: new Date().toISOString() };
+        appendMessage(targetSessionId, userMsgObj);
+
+        // Update session title if first message
+        const sessions = getSessions();
+        if ((sessions[targetSessionId]?.messages || []).length <= 1) {
+            sessions[targetSessionId].title = userMsg.substring(0, 30) + '...';
+            saveSessions(sessions);
         }
 
         try {
-            await addDoc(collection(db, 'ai_sessions', targetSessionId, 'messages'), {
-                role: 'user',
-                content: userMsg,
-                createdAt: serverTimestamp()
-            });
-
-            if (chatHistory.length === 0) {
-                await setDoc(doc(db, 'ai_sessions', targetSessionId), {
-                    title: userMsg.substring(0, 30) + "..."
-                }, { merge: true });
-            }
-
             const reportText = formatReportsForAI(reports);
+            const currentMsgs = getSessions()[targetSessionId]?.messages || [];
             const conversation = [
-                {
-                    "role": "system",
-                    "content": `You are NagrikEye AI. Use Markdown. No raw tokens.`
-                },
-                ...chatHistory.map(m => ({ role: m.role, content: m.content })),
+                { "role": "system", "content": `You are NagrikEye AI. Use Markdown. No raw tokens.` },
+                ...currentMsgs.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
                 { "role": "user", "content": `Context:\n${reportText}\n\nQuestion: ${userMsg}` }
             ];
 
@@ -264,14 +253,9 @@ const AdminAI = () => {
             });
 
             const json = await response.json();
-
             if (json.choices && json.choices.length > 0) {
                 const aiMsg = cleanAIResponse(json.choices[0].message.content);
-                await addDoc(collection(db, 'ai_sessions', targetSessionId, 'messages'), {
-                    role: 'assistant',
-                    content: aiMsg,
-                    createdAt: serverTimestamp()
-                });
+                appendMessage(targetSessionId, { role: 'assistant', content: aiMsg, createdAt: new Date().toISOString() });
             }
         } catch (error) {
             console.error("Chat error", error);

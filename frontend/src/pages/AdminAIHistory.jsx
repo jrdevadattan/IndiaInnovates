@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase/firebase';
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import Sidebar from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '../hooks/useSidebar';
+
+const LS_KEY = 'nagrikeye_ai_sessions';
+const getLSSessions = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; } };
 
 const AdminAIHistory = () => {
     const [sessions, setSessions] = useState([]);
@@ -12,27 +13,22 @@ const AdminAIHistory = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const q = query(collection(db, 'ai_sessions'), orderBy('createdAt', 'desc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAtDate: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(doc.data().createdAt)
-            }));
-            setSessions(data);
-            setLoading(false);
-        });
-        return () => unsubscribe();
+        const raw = getLSSessions();
+        const arr = Object.values(raw).map(s => ({
+            ...s,
+            createdAtDate: s.createdAt ? new Date(s.createdAt) : new Date()
+        })).sort((a, b) => b.createdAtDate - a.createdAtDate);
+        setSessions(arr);
+        setLoading(false);
     }, []);
 
-    const deleteSession = async (e, sessionId) => {
+    const deleteSession = (e, sessionId) => {
         e.stopPropagation();
         if (window.confirm('Are you sure you want to delete this chat?')) {
-            try {
-                await deleteDoc(doc(db, 'ai_sessions', sessionId));
-            } catch (error) {
-                console.error("Error deleting session:", error);
-            }
+            const raw = getLSSessions();
+            delete raw[sessionId];
+            localStorage.setItem(LS_KEY, JSON.stringify(raw));
+            setSessions(prev => prev.filter(s => s.id !== sessionId));
         }
     };
 

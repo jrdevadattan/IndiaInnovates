@@ -2,25 +2,27 @@ import React from "react";
 import { formatDistanceToNow } from "date-fns";
 
 const IssueCard = ({ report, onUpvote, currentUserId }) => {
-    const {
-        imageFile,
-        location,
-        selectedCategory,
-        description,
-        upvotes,
-        createdAt,
-        id,
-        parentId,
-        status = "pending",
-        upvotedBy = []
-    } = report;
+    // Normalize MongoDB and legacy Firestore field names
+    const id = report._id || report.id;
+    const imageFile = report.media?.[0]?.url || report.imageFile;
+    const selectedCategory = report.category || report.selectedCategory;
+    const location = typeof report.location === 'object'
+        ? (report.location?.address || `${report.location?.coordinates?.[1]?.toFixed(3)}, ${report.location?.coordinates?.[0]?.toFixed(3)}`)
+        : report.location;
+    const { description, upvotes, createdAt, status = "pending", upvotedBy = [] } = report;
 
     const isUpvoted = currentUserId && upvotedBy.includes(currentUserId);
 
 
-    const timeAgo = createdAt?.toDate
-        ? formatDistanceToNow(createdAt.toDate(), { addSuffix: true })
-        : "Just now";
+    const timeAgo = (() => {
+        try {
+            if (!createdAt) return "Just now";
+            const d = createdAt?.toDate ? createdAt.toDate()
+                : createdAt?.seconds ? new Date(createdAt.seconds * 1000)
+                : new Date(createdAt);
+            return formatDistanceToNow(d, { addSuffix: true });
+        } catch { return "Just now"; }
+    })();
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
@@ -58,7 +60,7 @@ const IssueCard = ({ report, onUpvote, currentUserId }) => {
 
             <div className="p-5 flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-[#339966] bg-[#339966]/10 px-2 py-1 rounded-md uppercase">
+                    <span className="text-xs font-bold text-[#5c8a00] bg-[#8ED462]/15 px-2 py-1 rounded-md uppercase">
                         {selectedCategory}
                     </span>
                     <span className="text-xs text-stone-400">{timeAgo}</span>
@@ -72,14 +74,12 @@ const IssueCard = ({ report, onUpvote, currentUserId }) => {
                 <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
                     <button
                         onClick={() => onUpvote(id)}
-                        className={`flex items-center gap-2 transition-colors group cursor-pointer ${isUpvoted ? "text-[#339966]" : "text-stone-500 hover:text-[#339966]"
+                        className={`flex items-center gap-2 transition-colors group cursor-pointer ${isUpvoted ? "text-[#5c8a00]" : "text-stone-500 hover:text-[#5c8a00]"
                             }`}
                         title={isUpvoted ? "Remove Vote" : "Upvote"}
                     >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isUpvoted ? "bg-[#339966]/20" : "bg-stone-50 group-hover:bg-[#339966]/10"
-                            }`}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill={isUpvoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-colors ${isUpvoted ? "stroke-[#339966]" : "group-hover:stroke-[#339966]"
-                                }`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isUpvoted ? "bg-[#8ED462]/20" : "bg-stone-50 group-hover:bg-[#8ED462]/10"}`}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill={isUpvoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-colors ${isUpvoted ? "stroke-[#5c8a00]" : "group-hover:stroke-[#5c8a00]"}`}>
                                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                             </svg>
                         </div>

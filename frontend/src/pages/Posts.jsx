@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment, arrayUnion, arrayRemove, getDoc } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { getReports, upvoteReport } from "../services/reports.service";
 import IssueCard from "../components/IssueCard";
 import FilterBar from "../components/FilterBar";
 import { gsap } from 'gsap';
@@ -16,23 +15,24 @@ const Posts = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState("newest");
-  useEffect(() => {
-    const q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedReports = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      const uniqueReports = fetchedReports.filter((report, index, self) =>
-        index === self.findIndex((r) => r.id === report.id)
-      );
-      setReports(uniqueReports);
+  const fetchReports = async () => {
+    try {
+      const { data } = await getReports({ sort: sort === "popular" ? "popular" : "newest", limit: 60 });
+      setReports(data.reports || data || []);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
 
-    return () => unsubscribe();
-  }, []);
+  useEffect(() => {
+    fetchReports();
+    // Poll every 30s for new reports
+    const interval = setInterval(fetchReports, 30000);
+    return () => clearInterval(interval);
+  }, [sort]);
 
   const [deviceId] = useState(() => {
     let id = localStorage.getItem("nagrikeye_device_id");
@@ -44,27 +44,21 @@ const Posts = () => {
   });
 
   const handleUpvote = async (reportId) => {
-    if (!deviceId) return;
-
-    const reportRef = doc(db, "reports", reportId);
     try {
-      const reportSnap = await getDoc(reportRef);
-      if (reportSnap.exists()) {
-        const reportData = reportSnap.data();
-        const hasUpvoted = reportData.upvotedBy?.includes(deviceId);
-
-        if (hasUpvoted) {
-          await updateDoc(reportRef, {
-            upvotes: increment(-1),
-            upvotedBy: arrayRemove(deviceId)
-          });
-        } else {
-          await updateDoc(reportRef, {
-            upvotes: increment(1),
-            upvotedBy: arrayUnion(deviceId)
-          });
-        }
-      }
+      await upvoteReport(reportId);
+      // Optimistically toggle upvote in local state
+      setReports(prev => prev.map(r => {
+        if (r._id !== reportId && r.id !== reportId) return r;
+        const id = r._id || r.id;
+        const alreadyVoted = r.upvotedBy?.includes(deviceId);
+        return {
+          ...r,
+          upvotes: alreadyVoted ? (r.upvotes || 1) - 1 : (r.upvotes || 0) + 1,
+          upvotedBy: alreadyVoted
+            ? (r.upvotedBy || []).filter(x => x !== deviceId)
+            : [...(r.upvotedBy || []), deviceId]
+        };
+      }));
     } catch (error) {
       console.error("Error upvoting:", error);
     }
@@ -73,13 +67,13 @@ const Posts = () => {
   const filteredReports = reports
     .filter((r) => {
       if (!filter) return true;
-      return r.selectedCategory === filter;
+      return r.selectedCategory === filter || r.category === filter;
     })
     .sort((a, b) => {
-      if (sort === "popular") {
-        return (b.upvotes || 0) - (a.upvotes || 0);
-      }
-      return b.createdAt?.seconds - a.createdAt?.seconds;
+      if (sort === "popular") return (b.upvotes || 0) - (a.upvotes || 0);
+      const aTime = a.createdAt?.seconds ?? new Date(a.createdAt).getTime() / 1000 ?? 0;
+      const bTime = b.createdAt?.seconds ?? new Date(b.createdAt).getTime() / 1000 ?? 0;
+      return bTime - aTime;
     });
 
   useGSAP(() => {

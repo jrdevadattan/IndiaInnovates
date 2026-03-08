@@ -1,2 +1,2 @@
-// Re-export from parent index for backward compat
-module.exports = require('../sockets/index');
+// Re-export wrapper so controllers can require('../sockets')
+module.exports = require('./sockets/index');

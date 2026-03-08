@@ -6,10 +6,17 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const { uploadToCloudinary } = require('../middleware/upload.middleware');
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+// Lazy-init so missing env vars don't crash on module load
+let razorpay;
+const getRazorpay = () => {
+  if (!razorpay) {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpay;
+};
 
 exports.getProducts = async (req, res) => {
   try {
@@ -121,7 +128,7 @@ exports.initiateCheckout = async (req, res) => {
 
     const finalAmount = Math.max(totalAmount - discountAmount, 1);
 
-    const rzpOrder = await razorpay.orders.create({
+    const rzpOrder = await getRazorpay().orders.create({
       amount: Math.round(finalAmount * 100), // paise
       currency: 'INR',
       receipt: `order_${Date.now()}`
