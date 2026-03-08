@@ -8,7 +8,7 @@ import { useLocation } from 'react-router-dom';
 import { useSidebar } from '../hooks/useSidebar';
 
 // ── localStorage helpers for AI sessions ──────────────────────────────────────
-const LS_KEY = 'nagrikeye_ai_sessions';
+const LS_KEY = 'lifeline_ai_sessions';
 const getSessions = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; } };
 const saveSessions = (s) => localStorage.setItem(LS_KEY, JSON.stringify(s));
 const genId = () => `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -174,14 +174,14 @@ const AdminAI = () => {
                     "Authorization": `Bearer ${API_KEY}`,
                     "Content-Type": "application/json",
                     "HTTP-Referer": window.location.origin,
-                    "X-Title": "NagrikEye"
+                    "X-Title": "LifeLine"
                 },
                 body: JSON.stringify({
                     "model": "mistralai/mistral-7b-instruct:free",
                     "messages": [
                         {
                             "role": "system",
-                            "content": `You are NagrikEye AI. Analyze these city issues for ${rangeLabel}. Identify top critical areas. 
+                            "content": `You are LifeLine AI. Analyze these city issues for ${rangeLabel}. Identify top critical areas. 
                             RULES:
                             1. Use standard Markdown formatting (bold **text**, lists -).
                             2. Do NOT use XML tags or special tokens.
@@ -233,7 +233,7 @@ const AdminAI = () => {
             const reportText = formatReportsForAI(reports);
             const currentMsgs = getSessions()[targetSessionId]?.messages || [];
             const conversation = [
-                { "role": "system", "content": `You are NagrikEye AI. Use Markdown. No raw tokens.` },
+                { "role": "system", "content": `You are LifeLine AI. Use Markdown. No raw tokens.` },
                 ...currentMsgs.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
                 { "role": "user", "content": `Context:\n${reportText}\n\nQuestion: ${userMsg}` }
             ];
@@ -244,7 +244,7 @@ const AdminAI = () => {
                     "Authorization": `Bearer ${API_KEY}`,
                     "Content-Type": "application/json",
                     "HTTP-Referer": window.location.origin,
-                    "X-Title": "NagrikEye"
+                    "X-Title": "LifeLine"
                 },
                 body: JSON.stringify({
                     "model": "mistralai/mistral-7b-instruct:free",

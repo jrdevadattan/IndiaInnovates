@@ -35,10 +35,10 @@ const Posts = () => {
   }, [sort]);
 
   const [deviceId] = useState(() => {
-    let id = localStorage.getItem("nagrikeye_device_id");
+    let id = localStorage.getItem("lifeline_device_id");
     if (!id) {
       id = crypto.randomUUID();
-      localStorage.setItem("nagrikeye_device_id", id);
+      localStorage.setItem("lifeline_device_id", id);
     }
     return id;
   });

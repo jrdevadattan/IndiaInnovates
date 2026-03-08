@@ -48,8 +48,8 @@ const Navbar = ({ onOpenReport }) => {
           {/* Main pill */}
           <div className="flex items-center grow shadow-sm bg-white rounded-[10px] pl-4 pr-3 h-full overflow-visible">
             <Link to="/" className="flex items-center gap-2 group mr-4 shrink-0">
-              <img src={logo} alt="NagrikEye" className="h-7 w-auto" />
-              <span className="text-[18px] font-semibold text-[#1a1a1a] tracking-normal">NagrikEye</span>
+              <img src={logo} alt="LifeLine" className="h-7 w-auto" />
+              <span className="text-[18px] font-semibold text-[#1a1a1a] tracking-normal">LifeLine</span>
             </Link>
 
             <div className="flex items-center gap-0 flex-1 flex-wrap">
@@ -130,8 +130,8 @@ const Navbar = ({ onOpenReport }) => {
           {/* Top bar */}
           <div className="bg-white rounded-[10px] shadow-sm px-3 py-2 flex items-center justify-between min-h-[61px]">
             <Link to="/" className="flex items-center gap-2 pl-1">
-              <img src={logo} alt="NagrikEye" className="h-6 w-auto" />
-              <span className="text-[18px] font-semibold text-[#1a1a1a]">NagrikEye</span>
+              <img src={logo} alt="LifeLine" className="h-6 w-auto" />
+              <span className="text-[18px] font-semibold text-[#1a1a1a]">LifeLine</span>
             </Link>
             <div className="flex items-center gap-2">
               {user && <NotificationBell />}

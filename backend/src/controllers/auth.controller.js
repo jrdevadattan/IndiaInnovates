@@ -152,7 +152,12 @@ exports.verifyEmail = async (req, res) => {
     const { otp } = req.body;
     const user = req.user;
 
-    if (user.emailVerificationOtp !== otp) {
+    const storedOtp = user.emailVerificationOtp || '';
+    const providedOtp = (otp || '').toString();
+    const otpMatch = storedOtp.length === providedOtp.length &&
+      crypto.timingSafeEqual(Buffer.from(storedOtp), Buffer.from(providedOtp));
+
+    if (!otpMatch) {
       return res.status(400).json({ success: false, message: 'Invalid OTP.' });
     }
     if (user.emailVerificationExpiry < new Date()) {

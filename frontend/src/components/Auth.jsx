@@ -71,7 +71,7 @@ export default function Auth() {
             <FiEye size={26} />
           </div>
           <h2 className="text-[26px] font-bold text-[#1a1a1a]">
-            {isSignup ? "Join NagrikEye" : "Welcome back"}
+            {isSignup ? "Join LifeLine" : "Welcome back"}
           </h2>
           <p className="text-[#666] text-sm mt-1">
             {isSignup ? "Create your civic account" : "Sign in to your account"}
@@ -171,7 +171,7 @@ export default function Auth() {
         </a>
 
         <p className="auth-item mt-6 text-center text-[14px] text-[#666]">
-          {isSignup ? "Already have an account?" : "New to NagrikEye?"}{" "}
+          {isSignup ? "Already have an account?" : "New to LifeLine?"}{" "}
           <span
             onClick={() => { setMode(isSignup ? "login" : "signup"); setError(""); }}
             className="cursor-pointer text-[#339966] font-semibold hover:underline"

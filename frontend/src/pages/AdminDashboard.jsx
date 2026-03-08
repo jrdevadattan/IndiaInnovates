@@ -107,7 +107,7 @@ const AdminDashboard = () => {
                                         <line x1="3" y1="18" x2="21" y2="18"></line>
                                     </svg>
                                 </button>
-                                <div className="text-sm font-bold text-[#8ED462] tracking-wider uppercase">NagrikEye</div>
+                                <div className="text-sm font-bold text-[#8ED462] tracking-wider uppercase">LifeLine</div>
                             </div>
                         )}
 

@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '../hooks/useSidebar';
 
-const LS_KEY = 'nagrikeye_ai_sessions';
+const LS_KEY = 'lifeline_ai_sessions';
 const getLSSessions = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; } };
 
 const AdminAIHistory = () => {

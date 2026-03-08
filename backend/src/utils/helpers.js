@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const generateAccessToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_ACCESS_SECRET, {
@@ -26,7 +27,7 @@ const getSlaDeadline = (severity) => {
   return new Date(now.getTime() + (minutes[severity] || 360) * 60 * 1000);
 };
 
-const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+const generateOtp = () => crypto.randomInt(100000, 1000000).toString();
 
 const getOtpExpiry = (minutes = 10) => {
   return new Date(Date.now() + minutes * 60 * 1000);

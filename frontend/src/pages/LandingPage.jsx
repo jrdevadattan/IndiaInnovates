@@ -128,7 +128,7 @@ const LandingPage = () => {
 
                 <div className="section-2-content max-w-325 mx-auto mb-32">
                     <h2 className="text-[#2c2e2a] text-[28px] lg:text-[40px] leading-[1.2] font-medium max-w-3xl">
-                        NagrikEye transforms everyday complaints into data-driven insights for faster decision-making, improved urban safety, and better governance.
+                        LifeLine transforms everyday complaints into data-driven insights for faster decision-making, improved urban safety, and better governance.
                     </h2>
                 </div>
 
@@ -171,7 +171,7 @@ const LandingPage = () => {
                             Everything you need.<br />All in one place.
                         </h2>
                         <p className="text-stone-500 text-[18px] max-w-2xl mx-auto">
-                            From emergency SOS to civic rewards — NagrikEye is your complete platform for civic engagement.
+                            From emergency SOS to civic rewards — LifeLine is your complete platform for civic engagement.
                         </p>
                     </div>
 

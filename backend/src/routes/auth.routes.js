@@ -8,7 +8,7 @@ const ctrl = require('../controllers/auth.controller');
 router.post('/register', authLimiter, ctrl.register);
 router.post('/login', authLimiter, ctrl.login);
 router.post('/logout', protect, ctrl.logout);
-router.post('/refresh', ctrl.refreshToken);
+router.post('/refresh', authLimiter, ctrl.refreshToken);
 router.post('/verify-email', protect, ctrl.verifyEmail);
 router.post('/forgot-password', authLimiter, ctrl.forgotPassword);
 router.post('/reset-password', ctrl.resetPassword);

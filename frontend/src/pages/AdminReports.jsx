@@ -123,7 +123,7 @@ const AdminReports = () => {
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', 'nagrikeye_reports.csv');
+        link.setAttribute('download', 'lifeline_reports.csv');
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -176,7 +176,7 @@ const AdminReports = () => {
                                         <line x1="3" y1="18" x2="21" y2="18"></line>
                                     </svg>
                                 </button>
-                                <div className="text-sm font-bold text-[#8ED462] tracking-wider uppercase">NagrikEye</div>
+                                <div className="text-sm font-bold text-[#8ED462] tracking-wider uppercase">LifeLine</div>
                             </div>
                         )}
 

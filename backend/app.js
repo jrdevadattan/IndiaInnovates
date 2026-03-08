@@ -27,9 +27,9 @@ app.use(cors({
   credentials: true
 }));
 
-// Body parsing
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Body parsing — keep JSON under 10 MB; file uploads go through multer
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging
 if (process.env.NODE_ENV !== 'test') {
@@ -64,7 +64,7 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error'
+    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Internal server error')
   });
 });
 
