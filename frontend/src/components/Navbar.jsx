@@ -7,10 +7,10 @@ import NotificationBell from "./notifications/NotificationBell";
 import { FiShoppingBag, FiAward, FiAlertCircle, FiClipboard, FiBarChart2, FiBriefcase, FiCompass } from 'react-icons/fi';
 
 const exploreLinks = [
-  { label: 'Marketplace', path: '/marketplace', desc: 'Buy eco-friendly civic goods', Icon: FiShoppingBag, requiresAuth: true },
-  { label: 'Rewards', path: '/rewards', desc: 'Earn points for reports', Icon: FiAward, requiresAuth: true },
-  { label: 'SOS Center', path: '/sos', desc: 'Emergency alert system', Icon: FiAlertCircle, requiresAuth: true },
-  { label: 'Volunteer Board', path: '/volunteer/tasks', desc: 'Join civic action tasks', Icon: FiClipboard, requiresAuth: true },
+  { label: 'Marketplace', path: '/marketplace', desc: 'Buy eco-friendly civic goods', Icon: FiShoppingBag },
+  { label: 'Rewards', path: '/rewards', desc: 'Earn points for reports', Icon: FiAward },
+  { label: 'SOS Center', path: '/sos', desc: 'Emergency alert system', Icon: FiAlertCircle },
+  { label: 'Volunteer Board', path: '/volunteer/tasks', desc: 'Join civic action tasks', Icon: FiClipboard },
   { label: 'Impact Dashboard', path: '/impact', desc: 'City-wide analytics', Icon: FiBarChart2 },
   { label: 'NGO Portal', path: '/ngo/dashboard', desc: 'Manage NGO cases', Icon: FiBriefcase, requiresRole: ['ngo', 'admin'] },
 ];
@@ -35,7 +35,6 @@ const Navbar = ({ onOpenReport }) => {
 
   const visibleExploreLinks = exploreLinks.filter(link => {
     if (link.requiresRole) return user && link.requiresRole.includes(user.role);
-    if (link.requiresAuth) return !!user;
     return true;
   });
 
