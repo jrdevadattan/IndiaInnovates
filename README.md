@@ -1,6 +1,6 @@
 <div align="center">
 
-# NagrikEye
+# LIFELINE
 
 ### AI-Driven Civic Action & Emergency Response Platform
 
@@ -8,10 +8,12 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![MongoDB](https://img.shields.io/badge/MongoDB-8-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-4-010101?logo=socket.io&logoColor=white)](https://socket.io)
-[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai&logoColor=white)](https://openai.com)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?logo=openai&logoColor=white)](https://openai.com)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A full-stack platform connecting **citizens**, **NGOs**, **volunteers**, and **authorities** in real-time to report civic issues, coordinate emergency responses, and gamify civic participation through AI-powered classification, live SOS tracking, and a social-impact marketplace.
+
+> Community-Driven NGO Support, Emergency Response & Volunteer Ecosystem
 
 </div>
 
@@ -39,10 +41,10 @@ A full-stack platform connecting **citizens**, **NGOs**, **volunteers**, and **a
 ### Civic Issue Reporting
 - Submit reports with up to 7 media attachments (images/video)
 - Anonymous reporting support
-- **AI-powered analysis** — OpenAI GPT-4o classifies severity (CRITICAL / SEVERE / MODERATE), extracts keywords, and validates legitimacy
+- **AI-powered analysis** — OpenAI GPT-4o-mini classifies severity (CRITICAL / SEVERE / MODERATE), extracts keywords, and validates legitimacy
 - **Google Cloud Vision** — verifies uploaded images for content relevance
 - **Geospatial auto-assignment** — nearest NGO handling the category is automatically assigned
-- SLA-based escalation: CRITICAL (3h) → SEVERE (12h) → MODERATE (48h)
+- SLA-based escalation: CRITICAL (10min) → SEVERE (1h) → MODERATE (6h)
 - Community upvoting and commenting
 - Resolution proof submission with before/after media
 
@@ -113,6 +115,7 @@ A full-stack platform connecting **citizens**, **NGOs**, **volunteers**, and **a
 | **GSAP** | 3.14 | High-performance animations |
 | **React Hot Toast** | 2.4 | Toast notifications |
 | **React Markdown** | 10.1 | Markdown rendering |
+| **React Icons** | 5.6 | Icon library (Feather icons) |
 | **date-fns** | 4.1 | Date utilities |
 
 ### Backend
@@ -123,7 +126,7 @@ A full-stack platform connecting **citizens**, **NGOs**, **volunteers**, and **a
 | **Express** | 4.18 | REST API framework |
 | **MongoDB / Mongoose** | 8.0 | NoSQL database & ODM |
 | **Socket.IO** | 4.6 | Real-time event broadcasting |
-| **OpenAI** | 4.20 | GPT-4o for report analysis |
+| **OpenAI** | 4.20 | GPT-4o-mini for report analysis |
 | **Google Cloud Vision** | 4.0 | Image analysis & content moderation |
 | **Firebase Admin** | 10.3 | Push notifications (FCM) |
 | **Passport.js** | 0.7 | Google OAuth 2.0 strategy |
@@ -180,7 +183,7 @@ A full-stack platform connecting **citizens**, **NGOs**, **volunteers**, and **a
                     ┌─────────┴─────────┐     ┌──────────┴──────────┐    ┌───────────┴───────────┐
                     │   AI & Analysis   │     │   Communication    │    │     Payments &        │
                     │                   │     │                    │    │     Media              │
-                    │ • OpenAI GPT-4o   │     │ • Twilio SMS       │    │ • Razorpay Gateway    │
+                    │ • OpenAI 4o-mini  │     │ • Twilio SMS       │    │ • Razorpay Gateway    │
                     │ • GCP Vision API  │     │ • Nodemailer       │    │ • Cloudinary CDN      │
                     │                   │     │ • Firebase FCM     │    │ • Sharp Processing    │
                     └───────────────────┘     └────────────────────┘    └───────────────────────┘
@@ -199,7 +202,7 @@ User submits report
         ▼
   Report saved to MongoDB (status: SUBMITTED)
         │
-        ├──► [Async] OpenAI GPT-4o: Classify severity, keywords, legitimacy
+        ├──► [Async] OpenAI GPT-4o-mini: Classify severity, keywords, legitimacy
         │         │
         │         ▼
         │    Google Cloud Vision: Validate images
@@ -223,7 +226,7 @@ User submits report
 ## Project Structure
 
 ```
-NagrikEye/
+LIFELINE/
 ├── backend/
 │   ├── server.js                  # HTTP + Socket.IO bootstrap
 │   ├── app.js                     # Express app configuration
@@ -296,9 +299,15 @@ NagrikEye/
 │       │   ├── FilterBar.jsx      # Category/status filters
 │       │   ├── ReportPopup.jsx    # Report submission modal
 │       │   ├── Auth.jsx           # Login/register forms
+│       │   ├── Footer.jsx         # Site footer
+│       │   ├── From.jsx           # Form component
+│       │   ├── LoadingScreen.jsx   # Animated splash screen
+│       │   ├── LogoAnimation.jsx   # SVG logo animation
+│       │   ├── MapSection.jsx      # Embedded map section
 │       │   ├── notifications/
 │       │   │   └── NotificationBell.jsx
-│       │   └── sos/               # SOS UI components
+│       │   └── sos/
+│       │       └── SOSButton.jsx   # Floating emergency button
 │       ├── pages/
 │       │   ├── LandingPage.jsx    # Public landing with GSAP hero
 │       │   ├── Posts.jsx          # Community feed
@@ -306,7 +315,9 @@ NagrikEye/
 │       │   ├── AdminReports.jsx   # Report management
 │       │   ├── AdminAnalytics.jsx # Platform analytics
 │       │   ├── AdminAI.jsx        # AI analysis interface
+│       │   ├── AdminAIHistory.jsx  # AI chat session history
 │       │   ├── auth/              # Login, register, password reset
+│       │   ├── admin/             # NGO approvals
 │       │   ├── sos/               # Emergency SOS page
 │       │   ├── ngo/               # NGO dashboard & cases
 │       │   ├── marketplace/       # Shop, cart, orders
@@ -331,7 +342,7 @@ NagrikEye/
 - **MongoDB** instance (local or Atlas)
 - **Firebase** project (for Auth + Cloud Messaging)
 - API keys for:
-  - OpenAI (GPT-4o)
+  - OpenAI (GPT-4o-mini)
   - Google Cloud Vision
   - Cloudinary
   - Twilio
@@ -342,7 +353,7 @@ NagrikEye/
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd NagrikEye
+cd LIFELINE
 
 # Install backend dependencies
 cd backend
@@ -385,7 +396,7 @@ NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
 # Database
-MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/nagrikeye
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/lifeline
 
 # JWT
 JWT_ACCESS_SECRET=your_access_secret
